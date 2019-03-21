@@ -5,23 +5,8 @@ Problem: Sending JSON like data (mostly numerical) by Radio must be done in a co
 
 What we mean by "JSON like" is a structure allowing to represent JSON data using a fields' dictionnary translating between a "shortcut" (few uppercase letters) and a full field name.
 
-RFC-7159 (JSON) ignores all spacing (outside strings) and indicates the following delimiters:
+## Table of 48 characters in 4 rows of 16 codes
 
-Concept|Character|Compressed representation
--------|---------|-------------------------
-begin-array|\[ left square bracket
-begin-object|\{ left curly bracket
-end-array|\] right square bracket
-end-object|\} right curly bracket
-name-separator|\: colon|Start a value, an object or an array
-value-separator|\, comma|Start a name, a value, an object or an array
-
-In compressed representation:
-* a numerical value starts with "0","-","."
-* a string value starts with '"' or <UTF-8>
-* a name starts with a letter ("A" to "Z", "_")
-* an object starts with \{
-* an array ends with \]
 We have 48 characters possible: 26 letters, 10 digits, '-', '.', '"', '_', <UTF-8>, '{', '}', '[', ']', space, ','
 
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
@@ -38,6 +23,25 @@ r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 r0|°|!|²|³|#|%| \| |=|&|?|:|;|Upper|r1|r2|r3
 r1|@|a|b|c|d|e|f|g|h|i|(|)|r0|Upper|r2|r3
 r2| \\ |j|k|l|m|n|o|p|q|r|\<|>|r0|r1|Upper|r3
-r3| € |\'|s|t|u|v|w|x|y|z|+|=|r0|r1|r2|Upper
+r3| ^ |\'|s|t|u|v|w|x|y|z|+|=|r0|r1|r2|Upper
 
 The \<UTF-8\> code ignores the remaining of the current byte (if any) and indicates that UTF-8 characters are following up to a byte with 0xFF (255) (something never permitted in Unicode UTF-8). 
+
+## JSON structure
+RFC-7159 (JSON) ignores all spacing (outside strings) and indicates the following delimiters:
+
+Concept|Character|Compressed representation
+-------|---------|-------------------------
+begin-array|\[ left square bracket
+begin-object|\{ left curly bracket
+end-array|\] right square bracket
+end-object|\} right curly bracket
+name-separator|\: colon|Start a value, an object or an array
+value-separator|\, comma|Start a name, a value, an object or an array
+
+In compressed representation:
+* a numerical value starts with "0","-","."
+* a string value starts with \" or \' (and ends with the same) or with \<UTF-8\> (ends with a byte with 0xFF (255))
+* a name starts with a letter ("A" to "Z", "a" to "z", "_")
+* an object starts with \{ and ends with \}
+* an array starts with \[ and ends with \]
