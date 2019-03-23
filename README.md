@@ -14,10 +14,10 @@ UPPER case Table:
 
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
-r0|0|1|2|3|4|5|6|7|8|9|-|.|Lower|r1|r2|r3
+r0|0|1|2|3|4|5|6|7|8|9|+|-|.|r1|r2|r3
 r1| |A|B|C|D|E|F|G|H|I|\[|\]|r0|Lower|r2|r3
-r2|+|J|K|L|M|N|O|P|Q|R|\{|\}|r0|r1|Lower|r3
-r3|\<UTF-8\>|\"|S|T|U|V|W|X|Y|Z|_|,|r0|r1|r2|Lower
+r2|,|J|K|L|M|N|O|P|Q|R|\{|\}|r0|r1|Lower|r3
+r3|\<UTF-8\>|\"|S|T|U|V|W|X|Y|Z|_|\'|r0|r1|r2|Lower
 
 If a "rX" is repeated, it shifts to lower case table (and vice-versa):
 
@@ -25,10 +25,10 @@ lower case Table:
 
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
-r0| \| |!|*|#|$|%|&|^|?|:|;|\`|Upper|r1|r2|r3
+r0| \| |!|*|#|$|%|&|^|?|;|=|Upper|r1|r2|r3
 r1|@|a|b|c|d|e|f|g|h|i|(|)|r0|Upper|r2|r3
 r2| \\ |j|k|l|m|n|o|p|q|r|\<|\>|r0|r1|Upper|r3
-r3| ^ |\'|s|t|u|v|w|x|y|z|/|=|r0|r1|r2|Upper
+r3| ^ |\`|s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
 
 The \<UTF-8\> code ignores the remaining of the current byte (if any) and indicates that UTF-8 characters are following up to a byte with 0xFF (255) (something never permitted in Unicode UTF-8).
 
@@ -73,3 +73,7 @@ If the desired character is not present, a character \<UTF-8\> is outputed, the 
 ## Development
 
 A small C++ library should be developped to support this format. It could also be implemented in JavaScript and Python if it proves useful for compressed transmission in other circumstances.
+
+A distinction must be made between strings ready to be transmitted and strings that may still be processed. In the second case, we recommend to record separately the beginning position and the end position in the encoding table: this will allow to generate the right change sequence for table position when concatenating different strings together.
+
+By the way we recommend to store the information to send in "segments" and to concatenate segments within messages just before transmission.
