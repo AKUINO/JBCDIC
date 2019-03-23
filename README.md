@@ -14,7 +14,7 @@ UPPER case Table:
 
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
-r0|0|1|2|3|4|5|6|7|8|9|+|-|.|r1|r2|r3
+r0|0|1|2|3|4|5|6|7|8|9|+|-|Lower|r1|r2|r3
 r1| |A|B|C|D|E|F|G|H|I|\[|\]|r0|Lower|r2|r3
 r2|,|J|K|L|M|N|O|P|Q|R|\{|\}|r0|r1|Lower|r3
 r3|\<UTF-8\>|\"|S|T|U|V|W|X|Y|Z|_|\'|r0|r1|r2|Lower
@@ -25,10 +25,10 @@ lower case Table:
 
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
-r0| \| |!|*|#|$|%|&|^|?|;|=| \~ |Upper|r1|r2|r3
+r0| \| |!|*|#|$|%|&|^|?|.|;|=|Upper|r1|r2|r3
 r1|@|a|b|c|d|e|f|g|h|i|(|)|r0|Upper|r2|r3
 r2| \\ |j|k|l|m|n|o|p|q|r|\<|\>|r0|r1|Upper|r3
-r3| ^ |\`|s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
+r3| ^ | \~ |s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
 
 The \<UTF-8\> code ignores the remaining of the current byte (if any) and indicates that UTF-8 characters are following up to a byte with 0xFF (255) (something never permitted in Unicode UTF-8).
 
@@ -50,7 +50,7 @@ value-separator|\, comma|Separates "members" in objects (then starts a name) or 
 In compressed representation:
 * a name starts with a letter ("A" to "Z", "a" to "z", "\_" and never with a digit), followed by letters, digits or "\_" and ends with the start of a value, or end of current array, or end of current object
 * a value is number, a string, an array or an object
-* a numerical value starts with "+" or "-"
+* a numerical value starts with "+" or "-" providing it signs. A "+" further in the number indicates the decimal point (".")
 * a string value starts with \" or \' (and ends with the same) or with \<UTF-8\> (ends with a byte with 0xFF (255))
 * an object starts with \{ and ends with \} and contains "members" (pairs of name+value)
 * an array starts with \[ and ends with \] and contains "values"
