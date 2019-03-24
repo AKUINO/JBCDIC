@@ -15,7 +15,7 @@ Let's take an example of data transmitted:
 
 The compression is done using three levels:
 
-1) Reduction of fields names and values: the fields names are reduced to one or few upper case letters or digits ("\_" also allowed). Special values like _true_, _false_, _null_ are represented with a "+" and one upper case letter (+T,+F,+N). Remaining upper case letters can be used for any other repeating string or number in the data. Translation dictionnaries must be managed at application level.
+1) Reduction of fields names and values: the fields names are reduced to one or few upper case letters or digits ("\_" also allowed). Special values like _true_, _false_, _null_ are represented with a "+" and one upper case letter (+T,+F,+N). Remaining upper case letters can be used for any other repeating string or number in the data. Translation dictionaries must be managed at application level.
 
 2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special escape character to start the string and special "invalid UTF-8" character to end the string) or `'strings'` or `"strings"` or `+number+` or `-number+` or `+number-decimals+` or `-number-decimals+` (other numerical structures like time or longitude could be represented using "-" as a delimiter between parts of the structure). The final "+" is necessary only if a negative number following (in arrays of values).
 
@@ -35,12 +35,12 @@ Below, the same with stars where the 4 bits compression needs "row shifts" (4 bi
 A total compression from "raw" JSON (no spacing) of 66% using realistic data. 
 
 Notes:
-* Application dictionnary of names and values is essential to achieve a good performance.
+* Application dictionary of names and values is essential to achieve a good performance.
 * Acronyms may have to be chosen taking into account the rows in the encoding table (to avoid row shifts). For instance, using "RP" (record period) instead of "TS" for the timestamp would remove a byte from the resulting string.
 * One may see that with a maximum data packet size of 53 bytes in LoRa: we would not send two sets of those example measures in one message.
 * Timestamp is often represented using 4 bytes (binary representation): we are using 5 bytes for `+316123456`
 * Small floating points numbers like temperature are often represented by 4 bytes in in binary format (single precision: 7 significant digits, well explained here http://www.cse.hcmut.edu.vn/~hungnq/courses/501120/docthem/Single%20precision%20floating-point%20format%20-%20Wikipedia.pdf ). We are using 2 bytes for `21.5`, 3 bytes for `-12.34` and 4.5 for `-123.4567` : BCD is very competitive compared to binary and keeps the flexibility of a character based representation of data (grammar driven encoding/decoding)
-* One more byte can also be saved by assuming a message is always an array (of measures taken at a given time): the opening and closing brackets can be assumed.
+* One more byte can also be saved by assuming a message is always an array of objects (measures sets): the opening and closing brackets can be assumed.
 
 ## Table of 48 characters in 4 rows of 16 codes
 
@@ -109,7 +109,7 @@ If the desired character is not present, a character \<UTF-8\> is outputed, the 
 
 ## Development
 
-A small C++ library should be developped to support this format. It could also be implemented in JavaScript and Python if it proves useful for compressed transmission in other circumstances.
+A small C++ library should be developed to support this format. It could also be implemented in JavaScript and Python if it proves useful for compressed transmission in other circumstances.
 
 A distinction must be made between strings ready to be transmitted and strings that may still be processed. In the second case, we recommend to record separately the beginning position and the end position in the encoding table: this will allow to generate the right change sequence for table position when concatenating different strings together.
 
