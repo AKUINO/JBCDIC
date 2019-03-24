@@ -1,9 +1,17 @@
-# BCDIC
-BCDIC (Binary-Coded Decimal Interchange Code) adapted to support the part of ASCII used by JSON (with escape mechanism toward UTF-8) to compress most characters into 4 bits
+# JBCDIC
+BCDIC (Binary-Coded Decimal Interchange Code) adapted to support the part of ASCII used necessary to represent JSON data to compress most characters into 4 bits. An escape mechanism allows UTF-8 strings to be inserted as is.
 
 Problem: Sending JSON like data (mostly numerical) by Radio must be done in a compressed way. Compression algorithms are often complex and not "programmer friendly". We make a proposal based on the lessons of history, the BCDIC from the 1930's (never underestimate our ancestors!): https://en.wikipedia.org/wiki/BCD_(character_encoding)#IBM_704_BCD_code .
 
-What we mean by "JSON like" is a structure allowing to represent JSON data using a fields' dictionnary translating between a "shortcut" (few uppercase letters) and a full applicative field name. This translation can be done rather late (e.g. in the application server) if the sensors are managed from there.
+The compression is done at three levels:
+
+1) Reduction of fields names and values: the fields names are reduced to one or few upper case letters or digits ("\_" also allowed). Special values like _true_, _false_, _null_ are represented with a "+" and one upper case letter (+T,+F,+N). Remaining upper case letters can be used for any other repeating string or number in the data. Translation dictionnaries must be managed at application level.
+
+2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special prefix for this and special ending) or 'strings' or "strings" or +number- or -number- or +number+decimals- or -number+decimals- (other numbers structure like time or longitude can be representing by using "+" as a delimiter within the number).
+
+3) The resulting string is compressed using an encoding table providing 4 bits per character and a row switching mechanism.
+
+What we mean by "JSON like" is a structure allowing to represent JSON data using a fields' dictionnary translating between a "shortcut" (one or few uppercase letters) and a full applicative field name. This translation can be done rather late (e.g. in the application server) if the sensors are managed from there.
 
 ## Table of 48 characters in 4 rows of 16 codes
 
@@ -15,9 +23,9 @@ UPPER case Table:
 r|0|1|2|3|4|5|6|7|8|9|A|B|C|D|E|F
 -|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-
 r0|0|1|2|3|4|5|6|7|8|9|+|-|Lower|r1|r2|r3
-r1| |A|B|C|D|E|F|G|H|I|\[|\]|r0|Lower|r2|r3
-r2|,|J|K|L|M|N|O|P|Q|R|\{|\}|r0|r1|Lower|r3
-r3|\<UTF-8\>|\"|S|T|U|V|W|X|Y|Z|_|\'|r0|r1|r2|Lower
+r1|\'|A|B|C|D|E|F|G|H|I|\[|\]|r0|Lower|r2|r3
+r2|\"|J|K|L|M|N|O|P|Q|R|\{|\}|r0|r1|Lower|r3
+r3|\<UTF-8\>| |S|T|U|V|W|X|Y|Z|_|,|r0|r1|r2|Lower
 
 If a "rX" is repeated, it shifts to lower case table (and vice-versa):
 
