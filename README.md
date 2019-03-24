@@ -40,6 +40,7 @@ Notes:
 * One may see that with a maximum data packet size of 53 bytes in LoRa: we would not send two sets of those example measures in one message.
 * Timestamp is often represented using 4 bytes (binary representation): we are using 5 bytes for `+316123456`
 * Small floating points numbers like temperature are often represented by 4 bytes in in binary format (single precision: 7 significant digits, well explained here http://www.cse.hcmut.edu.vn/~hungnq/courses/501120/docthem/Single%20precision%20floating-point%20format%20-%20Wikipedia.pdf ). We are using 2 bytes for `21.5`, 3 bytes for `-12.34` and 4.5 for `-123.4567` : BCD is very competitive compared to binary and keeps the flexibility of a character based representation of data (grammar driven encoding/decoding)
+* One more byte can also be saved by assuming a message is always an array (of measures taken at a given time): the opening and closing brackets can be assumed.
 
 ## Table of 48 characters in 4 rows of 16 codes
 
