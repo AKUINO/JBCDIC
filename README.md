@@ -1,17 +1,44 @@
 # JBCDIC
-BCDIC (Binary-Coded Decimal Interchange Code) adapted to support the part of ASCII used necessary to represent JSON data to compress most characters into 4 bits. An escape mechanism allows UTF-8 strings to be inserted as is.
+BCDIC (Binary-Coded Decimal Interchange Code) adapted to support the part of ASCII necessary to represent JSON data to compress most characters into 4 bits. An escape mechanism allows UTF-8 strings to be inserted as is.
 
 Problem: Sending JSON like data (mostly numerical) by Radio must be done in a compressed way. Compression algorithms are often complex and not "programmer friendly". We make a proposal based on the lessons of history, the BCDIC from the 1930's (never underestimate our ancestors!): https://en.wikipedia.org/wiki/BCD_(character_encoding)#IBM_704_BCD_code .
 
-The compression is done at three levels:
+It is bewildering to see how many proposals exist for Radio Data compression (list in reference at the end of this document). We reviewed many and makes this proposal anyway: if a reader would like to compare the compression rate with real and representative data, we would be delighted !
+
+The reader may like to have in mind the JSON specification: https://tools.ietf.org/html/rfc7159
+
+Let's take an example of data transmitted:
+
+\[{timestamp:316123456,battery:3.71,temperature:21.3,humidity:67.2,lumens:400,co2:1134,button:false,adc:null},{timestamp:316123516,battery:3.7,temperature:21.35,humidity:67,lumens:480,co2:1156,button:true,adc:567}]
+
+(we suppose timestamp is the number of seconds since a given date and we are 10 years later)
+
+The compression is done using three levels:
 
 1) Reduction of fields names and values: the fields names are reduced to one or few upper case letters or digits ("\_" also allowed). Special values like _true_, _false_, _null_ are represented with a "+" and one upper case letter (+T,+F,+N). Remaining upper case letters can be used for any other repeating string or number in the data. Translation dictionnaries must be managed at application level.
 
-2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special prefix for this and special ending) or 'strings' or "strings" or +number- or -number- or +number+decimals- or -number+decimals- (other numbers structure like time or longitude can be representing by using "+" as a delimiter within the number).
+2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special escape character for this and special "invalid UTF-8" character for ending) or 'strings' or "strings" or +number+ or -number+ or +number-decimals+ or -number-decimals+ (other numerical structures like time or longitude could be represented using "-" as a delimiter between parts of the structure). The final "+" can be ommitted if a number is not following.
 
-3) The resulting string is compressed using an encoding table providing 4 bits per character and a row switching mechanism.
+3) The resulting string is compressed using an encoding table providing 4 bits per character and a row switching mechanism. We expect most data to be encoded using the row 0 (digits, +, - ) and only 4 bits for each of those characters.
 
-What we mean by "JSON like" is a structure allowing to represent JSON data using a fields' dictionnary translating between a "shortcut" (one or few uppercase letters) and a full applicative field name. This translation can be done rather late (e.g. in the application server) if the sensors are managed from there.
+Our example after 1) and 2) becomes:
+
+\[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]
+
+103 characters remaining out of 215 characters: a compression of 52% (not counting any original spacing)
+
+Below, the same with stars where the 4 bits compression needs "row shifts" (4 bits cost):
+\*\[\*\{\*TS*+316123456\*B*+3-71\*T*+21-3\*H*+67-2\*L*+400\*C*\2+1134\*U*+\*FA*+\*N*}\{\*TS*+316123516\*B*+3-7\*T*+21-35\*H*+67\*L*+480\*C\*2+1156\*U*+\*T\*A*+567*}\*]
+
+140 chunks of 4 bits (70 bytes) are produced for 103 characters: a compression of 42%.
+
+A total compression from "raw" JSON (no spacing) of 66% using realistic data. 
+
+Notes:
+* Application dictionnary of names and values is essential to achieve a good performance.
+* Acronyms may have to be chosen taking into account the rows in the encoding table (to avoid row shifts). For instance, using "RP" (record period) instead of "TS" for the timestamp would remove a byte from the resulting string.
+* One may see that with a maximum data packet size of 53 bytes in LoRa: we would not send two sets of those example measures in one message.
+* Timestamp is often represented using 4 bytes (binary representation): we are using 5 bytes for "+316123456"
 
 ## Table of 48 characters in 4 rows of 16 codes
 
@@ -85,3 +112,8 @@ A small C++ library should be developped to support this format. It could also b
 A distinction must be made between strings ready to be transmitted and strings that may still be processed. In the second case, we recommend to record separately the beginning position and the end position in the encoding table: this will allow to generate the right change sequence for table position when concatenating different strings together.
 
 By the way we recommend to store the information to send in "segments" and to concatenate segments within messages just before transmission.
+
+# Other formats:
+
+* SenseML:
+* CBOR: https://tools.ietf.org/html/rfc7049
