@@ -28,7 +28,7 @@ Our example after 1) and 2) becomes:
 103 characters remaining out of 215 characters: a compression of 52% (not counting any original spacing)
 
 Below, the same with stars where the 4 bits compression needs "row shifts" (4 bits cost):
-`\*\[\*\{\*TS*+316123456\*B*+3-71\*T*+21-3\*H*+67-2\*L*+400\*C*\2+1134\*U*+\*FA*+\*N*}\{\*TS*+316123516\*B*+3-7\*T*+21-35\*H*+67\*L*+480\*C\*2+1156\*U*+\*T\*A*+567*}\*]`
+`*[*{*TS*+316123456*B*+3-71*T*+21-3*H*+67-2*L*+400*C*2+1134*U*+*FA*+*N*}{*TS*+316123516*B*+3-7*T*+21-35*H*+67*L*+480*C*2+1156*U*+*T*A*+567*}*]`
 
 140 chunks of 4 bits (70 bytes) are produced for 103 characters: a compression of 42%.
 
@@ -101,7 +101,7 @@ A reverse table will be created from the Decoding tables. As the tables only inc
 
 If the table is different than the current one, a chunk is generated with the 4 bits value = 12+"current row" (shift to the other table)
 
-If the row is different form the current one, a chunk is generated with the 4 bits value = 12+"requested row" (shift to the desirer row)
+If the row is different from the current one, a chunk is generated with the 4 bits value = 12+"requested row" (shift to the desirer row)
 
 A chunk is generated with the desired character position (4 bits value between 0 and 11).
 
@@ -125,5 +125,5 @@ By the way we recommend to store the information to send in "segments" and to co
 * SenseML: https://tools.ietf.org/html/rfc8428
 * Type-Length-Value encoding: https://named-data.net/doc/NDN-packet-spec/0.3/tlv.html
 
-# Application examples
+# Possible application examples
 OBSS: https://www.sciencedirect.com/science/article/pii/S0360132316300476
