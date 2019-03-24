@@ -3,13 +3,13 @@ BCDIC (Binary-Coded Decimal Interchange Code) adapted to support the part of ASC
 
 Problem: Sending JSON like data (mostly numerical) by Radio must be done in a compressed way. Compression algorithms are often complex and not "programmer friendly". We make a proposal based on the lessons of history, the BCDIC from the 1930's (never underestimate our ancestors!): https://en.wikipedia.org/wiki/BCD_(character_encoding)#IBM_704_BCD_code .
 
-It is bewildering to see how many proposals exist for Radio Data compression (list in reference at the end of this document). We reviewed many and makes this proposal anyway: if a reader would like to compare the compression rate with real and representative data, we would be delighted !
+It is bewildering to see how many proposals exist for Radio Data compression (list in reference at the end of this document). We reviewed many and makes this proposal anyway: if a reader would like to compare the compression rate with real and representative data (example: https://www.epj-conferences.org/articles/epjconf/pdf/2017/31/epjconf_incape2017_01073.pdf), we would be delighted !
 
 The reader may like to have in mind the JSON specification: https://tools.ietf.org/html/rfc7159
 
 Let's take an example of data transmitted:
 
-\[{timestamp:316123456,battery:3.71,temperature:21.3,humidity:67.2,lumens:400,co2:1134,button:false,adc:null},{timestamp:316123516,battery:3.7,temperature:21.35,humidity:67,lumens:480,co2:1156,button:true,adc:567}]
+`[{timestamp:316123456,battery:3.71,temperature:21.3,humidity:67.2,lumens:400,co2:1134,button:false,adc:null},{timestamp:316123516,battery:3.7,temperature:21.35,humidity:67,lumens:480,co2:1156,button:true,adc:567}]`
 
 (we suppose timestamp is the number of seconds since a given date and we are 10 years later)
 
@@ -17,18 +17,18 @@ The compression is done using three levels:
 
 1) Reduction of fields names and values: the fields names are reduced to one or few upper case letters or digits ("\_" also allowed). Special values like _true_, _false_, _null_ are represented with a "+" and one upper case letter (+T,+F,+N). Remaining upper case letters can be used for any other repeating string or number in the data. Translation dictionnaries must be managed at application level.
 
-2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special escape character for this and special "invalid UTF-8" character for ending) or 'strings' or "strings" or +number+ or -number+ or +number-decimals+ or -number-decimals+ (other numerical structures like time or longitude could be represented using "-" as a delimiter between parts of the structure). The final "+" can be ommitted if a number is not following.
+2) Reduction of punctuation: spacing is discarded, ":" is discarded between names and values, "," is discarded between members of an object and between values of an array. Values are normalized as UTF-8 strings (special escape character to start the string and special "invalid UTF-8" character to end the string) or `'strings'` or `"strings"` or `+number+` or `-number+` or `+number-decimals+` or `-number-decimals+` (other numerical structures like time or longitude could be represented using "-" as a delimiter between parts of the structure). The final "+" is necessary only if a negative number following (in arrays of values).
 
 3) The resulting string is compressed using an encoding table providing 4 bits per character and a row switching mechanism. We expect most data to be encoded using the row 0 (digits, +, - ) and only 4 bits for each of those characters.
 
 Our example after 1) and 2) becomes:
 
-\[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]
+`[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
 
 103 characters remaining out of 215 characters: a compression of 52% (not counting any original spacing)
 
 Below, the same with stars where the 4 bits compression needs "row shifts" (4 bits cost):
-\*\[\*\{\*TS*+316123456\*B*+3-71\*T*+21-3\*H*+67-2\*L*+400\*C*\2+1134\*U*+\*FA*+\*N*}\{\*TS*+316123516\*B*+3-7\*T*+21-35\*H*+67\*L*+480\*C\*2+1156\*U*+\*T\*A*+567*}\*]
+`\*\[\*\{\*TS*+316123456\*B*+3-71\*T*+21-3\*H*+67-2\*L*+400\*C*\2+1134\*U*+\*FA*+\*N*}\{\*TS*+316123516\*B*+3-7\*T*+21-35\*H*+67\*L*+480\*C\*2+1156\*U*+\*T\*A*+567*}\*]`
 
 140 chunks of 4 bits (70 bytes) are produced for 103 characters: a compression of 42%.
 
@@ -38,7 +38,8 @@ Notes:
 * Application dictionnary of names and values is essential to achieve a good performance.
 * Acronyms may have to be chosen taking into account the rows in the encoding table (to avoid row shifts). For instance, using "RP" (record period) instead of "TS" for the timestamp would remove a byte from the resulting string.
 * One may see that with a maximum data packet size of 53 bytes in LoRa: we would not send two sets of those example measures in one message.
-* Timestamp is often represented using 4 bytes (binary representation): we are using 5 bytes for "+316123456"
+* Timestamp is often represented using 4 bytes (binary representation): we are using 5 bytes for `+316123456`
+* Small floating points numbers like temperature are often represented by 4 bytes in in binary format (single precision: 7 significant digits, well explained here http://www.cse.hcmut.edu.vn/~hungnq/courses/501120/docthem/Single%20precision%20floating-point%20format%20-%20Wikipedia.pdf ). We are using 2 bytes for `21.5`, 3 bytes for `-12.34` and 4.5 for `-123.4567` : BCD is very competitive compared to binary and keeps the flexibility of a character based representation of data (grammar driven encoding/decoding)
 
 ## Table of 48 characters in 4 rows of 16 codes
 
@@ -85,7 +86,7 @@ value-separator|\, comma|Separates "members" in objects (then starts a name) or 
 In compressed representation:
 * a name starts with a letter ("A" to "Z", "a" to "z", "\_" and never with a digit), followed by letters, digits or "\_" and ends with the start of a value, or end of current array, or end of current object
 * a value is number, a string, an array or an object
-* a numerical value starts with "+" or "-" providing it signs. A "+" further in the number indicates the decimal point (".")
+* a numerical value starts with "+" or "-" providing it signs. A "-" further in the number indicates the decimal point ("."). A numerical value must be ended by a "+" only if it is directly followed by a negative numerical value.
 * a string value starts with \" or \' (and ends with the same) or with \<UTF-8\> (ends with a byte with 0xFF (255))
 * an object starts with \{ and ends with \} and contains "members" (pairs of name+value)
 * an array starts with \[ and ends with \] and contains "values"
@@ -115,5 +116,13 @@ By the way we recommend to store the information to send in "segments" and to co
 
 # Other formats:
 
-* SenseML:
+* Cayenne: https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md
 * CBOR: https://tools.ietf.org/html/rfc7049
+* HYBRID: http://henrich.poehls.com/papers/2017_PoehlsPetschkuhn_IoT_signature_encoding_CAMAD.pdf
+* JSON-B: http://mathmesh.com/Documents/draft-hallambaker-jsonbcd.html
+* RAKE: https://www.eurasip.org/Proceedings/Eusipco/Eusipco2017/papers/1570344021.pdf
+* SenseML: https://tools.ietf.org/html/rfc8428
+* Type-Length-Value encoding: https://named-data.net/doc/NDN-packet-spec/0.3/tlv.html
+
+# Application examples
+OBSS: https://www.sciencedirect.com/science/article/pii/S0360132316300476
