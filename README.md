@@ -125,15 +125,24 @@ A small C++ library should be developed to support this format. It could also be
 
 Concatenation of strings is not easy (the current row/table selection must be known for the beginning and the end of the string): we recommend to store the data as regular strings and to encode/decode them in one block when transmitting.
 
-# Other formats:
+# Other existing formats :
 
-* Cayenne: https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md
+A performance comparison (including parameterization effort) should be done with existing formats like:
+* ABCL, Binary encoded structure definition language: https://docs.allthingstalk.com/dl/AllThingsTalk_Binary_Conversion_Language_1_0_0.pdf
+* BER from ASN.1
+* BSON: http://bsonspec.org/spec.html
+* CayenneLPP which is used by LoRaWAN and supported by existing libraries ( https://mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload , https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md
 * CBOR: https://tools.ietf.org/html/rfc7049
 * HYBRID: http://henrich.poehls.com/papers/2017_PoehlsPetschkuhn_IoT_signature_encoding_CAMAD.pdf
 * JSON-B: http://mathmesh.com/Documents/draft-hallambaker-jsonbcd.html
+* MessagePack: https://msgpack.org/
+* NDN TLV (Type-Length-Value) encoding: https://named-data.net/doc/NDN-packet-spec/0.3/tlv.html
 * RAKE: https://www.eurasip.org/Proceedings/Eusipco/Eusipco2017/papers/1570344021.pdf
 * SenseML: https://tools.ietf.org/html/rfc8428
-* Type-Length-Value encoding: https://named-data.net/doc/NDN-packet-spec/0.3/tlv.html
+* Smile, Jackson Efficient JSON-compatible binary format: https://github.com/FasterXML/smile-format-specification/blob/master/smile-specification.md
+* UBJSON is a TLV (Type-Length-Value) encoding and wants to replace BSON, BJSON, etc.
+
+N.B. The format we propose is not a TLV as it remains "chunk" based and not binary.
 
 # Possible application examples
 OBSS: https://www.sciencedirect.com/science/article/pii/S0360132316300476
