@@ -79,6 +79,21 @@ r3| ^ | \~ |s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
 
 The \<UTF-8\> code ignores the remaining of the current byte (if any) and indicates that UTF-8 characters are following up to a byte with 0xFF (255) (something never permitted in Unicode UTF-8).
 
+The example above can be compressed. We have row shifts between 0 and 3 (°'²³):
+`'[²{³TS°+316123456'B°+3-71³T°+21-3'H°+67-2²L°+400'C°2+1134³U°+'FA°+²N}{³TS°+316123516'B°+3-7³T°+21-35'H°+67²L°+480'C°2+1156³U°+³T'A°+567²}']`
+
+The characters are represented as an hexadecimal digit indicating their position (0 to 11, 0 to 0xB) in each row:
+`'A²A³32°A316123456'2°A3B71³3°A21B3'8°A67B2²3°A400'3°2B1134³4°A'61°A²5B
+A³32°A316123516'2°A3B7³3°A21B35'8°A67²3°A480'3°2A1156³4°A³3'1°A567²B'B`
+
+The row shifts from 0 to 3 are coded using characters 0xC to 0xF:
+`DAEAF32CA316123456D2CA3B71F3CA21B3D8CA67B2E3CA400D3C2B1134F4CAD61CAE5B
+AF32CA316123516D2CA3B7F3CA21B35D8CA67E3CA480D3C2A1156F4CAF3D1CA567EBDB`
+
+Corresponding bytes:
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+("F" added to the end (shift to row 3) to fill the last byte)
+
 Following such a structure ensures the flexibility of JSON whilst achieving a correct compression. The choosen format is character based and 37,5% less efficient than pure binary representation (if and only if the number of bits for the binary representation is exactly provided: rarely done and produce an overhead to provide this exact length): we think it is an excellent compromise between compression, flexibility (JSON is way more flexible than fixed binary data arrays) and simplicity.
 
 ## JSON structure and compression rules
@@ -106,6 +121,15 @@ In compressed representation:
 The decoding should first read the input buffer by chunks of 4 bits. It starts in the Upper case Table, row 0.
 The characters to generate are found by addressing the right row in the right table. If the UTF-8 begin character is detected, the following byte (not chunk) is the beginning of an UTF-8 string to be appended as is. This string ends with a byte containing #255 (0xFF) which never appears in a valid UTF-8 (or at the end of the input buffer).
 
+Our first aim will be to start from a string of encoded bytes and obtain the result of 4bits decompression (JSON agnostic): a simple C function receiving a string and returning another (larger normally!). Example, going from:
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+
+to:
+`[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
+
+A second function will be necessary later to transform this result in a JSON-LD compatible format (typically for transmission to a Web application):
+`[{'TS':316123456,'B':3.71,'T':21.3,'H':67.2,'L':400,'C2':1134,'U':false,'A':null}[{'TS':316123516,'B':3.7,'T':21.35,'H':67,'L':480,'C2':1156,'U':true,'A':567}`
+
 ## Encoding
 A reverse table will be created from the Decoding tables. As the tables only include regular ASCII characters (no €, °, ², ³ or whatsoever), none are above #126 (0x7E) or lower than #32 (0x20). In this "reverse" table, the ASCII characters will be marked as unsupported or present in table "lower" or "UPPER", at a specific row and a specific 4 bits value (11 or lower).
 
@@ -118,6 +142,16 @@ A chunk is generated with the desired character position (4 bits value between 0
 If the desired character is not present, a character \<UTF-8\> is outputed, the current byte is finished and the following characters are copied as-is up to the end of the string needed to be added. If other characters will be added afterward, a byte #255 (0xFF) is appended.
 
 If the last byte is only half filled, a chunk between 12 and 15 (0xC to 0xF) can be appended.
+
+We need a function taking a string and returning its compressed version (which may be a bit larger if it is not usual JSON data). Example, going from:
+`[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
+
+to the following bytes (hexadecimal):
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+
+as a C string:
+`\xDA\xEA\xF3\x2C\xA3\x16\x12\x34\x56\xD2\xCA\x3B\x71\xF3\xCA\x21\xB3\xD8\xCA6\x7B\x2E\x3C\xA4\x00\xD3\xC2\xB1\x13\x4F\x4C\xAD\x61\xCA\xE5\xBA\xF3\x2C\xA3\x16\x12\x35\x16\xD2\xCA\x3B\x7F\x3C\xA2\x1B\x35\xD8\xCA\x67\xE3\xCA\x48\x0D\x3C\x2A\x11\x56\xF4\xCA\xF3\xD1\xCA\x56\x7E\xBD\xBF`
+
 
 ## Development
 
