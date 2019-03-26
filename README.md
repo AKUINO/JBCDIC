@@ -75,7 +75,7 @@ row|0|1|2|3|4|5|6|7|8|9|A (10)|B (11)|C (12)|D (13)|E (14)|F (15)
 r0| \| |!|*|#|$|%|&|^|?|.|;|=|Upper|r1|r2|r3
 r1|@|a|b|c|d|e|f|g|h|i|(|)|r0|Upper|r2|r3
 r2| \\ |j|k|l|m|n|o|p|q|r|\<|\>|r0|r1|Upper|r3
-r3| ^ | \~ |s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
+r3| \` | \~ |s|t|u|v|w|x|y|z|/|:|r0|r1|r2|Upper
 
 The \<UTF-8\> code ignores the remaining of the current byte (if any) and indicates that UTF-8 characters are following up to a byte with 0xFF (255) (something never permitted in Unicode UTF-8).
 
