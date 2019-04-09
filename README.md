@@ -91,7 +91,7 @@ The row shifts from 0 to 3 are coded using characters 0xC to 0xF:
 AF32CA316123516D2CA3B7F3CA21B35D8CA67E3CA480D3C2A1156F4CAF3D1CA567EBDB`
 
 Corresponding bytes:
-`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA 67 B2 E3 CA 40 D 3C 2A 11 34 F4 CA D6 1C AE 5B AF 32 CA 31 61 23 51 6D 2C A3 B7 F3 CA 21 B3 5D 8C A6 7E 3C A4 80 D3 C2 A1 15 6F 4C AF 3D 1C A5 67 EB DB`
 ("F" added to the end (shift to row 3) to fill the last byte)
 
 Following such a structure ensures the flexibility of JSON whilst achieving a correct compression. The choosen format is character based and 37,5% less efficient than pure binary representation (if and only if the number of bits for the binary representation is exactly provided: rarely done and produce an overhead to provide this exact length): we think it is an excellent compromise between compression, flexibility (JSON is way more flexible than fixed binary data arrays) and simplicity.
@@ -122,7 +122,7 @@ The decoding should first read the input buffer by chunks of 4 bits. It starts i
 The characters to generate are found by addressing the right row in the right table. If the UTF-8 begin character is detected, the following byte (not chunk) is the beginning of an UTF-8 string to be appended as is. This string ends with a byte containing #255 (0xFF) which never appears in a valid UTF-8 (or at the end of the input buffer).
 
 Our first aim will be to start from a string of encoded bytes and obtain the result of 4bits decompression (JSON agnostic): a simple C function receiving a string and returning another (larger normally!). Example, going from:
-`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA 67 B2 E3 CA 40 D 3C 2A 11 34 F4 CA D6 1C AE 5B AF 32 CA 31 61 23 51 6D 2C A3 B7 F3 CA 21 B3 5D 8C A6 7E 3C A4 80 D3 C2 A1 15 6F 4C AF 3D 1C A5 67 EB DB`
 
 to:
 `[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
@@ -147,7 +147,7 @@ We need a function taking a string and returning its compressed version (which m
 `[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
 
 to the following bytes (hexadecimal):
-`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA6 7B 2E 3C A4 00 D3 C2 B1 13 4F 4C AD 61 CA E5 BA F3 2C A3 16 12 35 16 D2 CA 3B 7F 3C A2 1B 35 D8 CA 67 E3 CA 48 0D 3C 2A 11 56 F4 CA F3 D1 CA 56 7E BD BF`
+`DA EA F3 2C A3 16 12 34 56 D2 CA 3B 71 F3 CA 21 B3 D8 CA 67 B2 E3 CA 40 D 3C 2A 11 34 F4 CA D6 1C AE 5B AF 32 CA 31 61 23 51 6D 2C A3 B7 F3 CA 21 B3 5D 8C A6 7E 3C A4 80 D3 C2 A1 15 6F 4C AF 3D 1C A5 67 EB DB`
 
 as a C string:
 `\xDA\xEA\xF3\x2C\xA3\x16\x12\x34\x56\xD2\xCA\x3B\x71\xF3\xCA\x21\xB3\xD8\xCA6\x7B\x2E\x3C\xA4\x00\xD3\xC2\xB1\x13\x4F\x4C\xAD\x61\xCA\xE5\xBA\xF3\x2C\xA3\x16\x12\x35\x16\xD2\xCA\x3B\x7F\x3C\xA2\x1B\x35\xD8\xCA\x67\xE3\xCA\x48\x0D\x3C\x2A\x11\x56\xF4\xCA\xF3\xD1\xCA\x56\x7E\xBD\xBF`
