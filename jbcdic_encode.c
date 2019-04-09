@@ -71,11 +71,12 @@ void to_byte(char *input, BYTE *output, int size_in, int size_out) {
         }
         else {
             i = size_in +1;
-            if( tmp > 16 ){
+            if( tmp > 16 || write == 2){
                 output[index_output] = tmp;
                 index_output++;
+                write = 0;
             }
-            else if(tmp > 0){
+            else if(tmp > 0 || write == 1){
                 output[index_output] = tmp*16 + 15;
             }
         }
