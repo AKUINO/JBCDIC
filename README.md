@@ -226,22 +226,20 @@ ws
 ~~~~
 ### Compressed JSON Grammar:
 
-A complete payload is a suite of messages: compressed JSON starts as "elements" when decompressing the payload received from radio.
-
 ~~~~
-compressedJSON
+compressedJSON -- To match with a JSON statement
    element
 
-radioPayload
-   elements (an array of element)
+radioPayload -- A complete radio payload is a suite of messages
+   elements -- an array of element
 
 elements
+   element nextelements -- negative numbers are slightly different in nextelements
    element
-   element nextelements
    
 nextelements
-   nextelement
    nextelement nextelements
+   nextelement
 
 element
    value
@@ -255,7 +253,7 @@ value
 
 nextvalue
    othervalue
-   '+-' number
+   '+-' number -- negative number in a nextelement
 
 othervalue
    object
@@ -282,15 +280,15 @@ alpha
     'A' . 'Z'
     '_'
 
-name
-    alpha
+name  -- Compressed JSON does not allow strings for properties names.
     alpha alphanum
+    alpha
 
 alphanum
-    alpha
     alpha alphanum
-    digit
+    alpha
     digit alphanum
+    digit
     
 array
     '[]'
@@ -301,8 +299,8 @@ string
 "'" characters "'"
 
 characters
-    ""
     character characters
+    ""
 
 character
     '0020' . '10FFFF' - '"' - '\'
@@ -324,17 +322,17 @@ hex
     'a' . 'f'
 
 number
-    int
-    int frac
     int frac exp
+    int frac
+    int
 
 int
-    digit
     onenine digits
+    digit
 
 digits
-    digit
     digit digits
+    digit
 
 digit
     '0'
@@ -344,8 +342,8 @@ onenine
     '1' . '9'
 
 frac
-    '-'
     '-' digits
+    '-'
 
 exp
     '-' digit
