@@ -117,6 +117,242 @@ In compressed representation:
 * an object starts with \{ and ends with \} and contains "members" (pairs of name+value)
 * an array starts with \[ and ends with \] and contains "values"
 
+We think applications may rather easily produce directly JSON in this compressed representation. But external applications may require "regular JSON": we need a precise mapping between the compressed JSON grammar and the regular JSON grammar:
+
+### Regular JSON Grammar
+(from https://www.crockford.com/mckeeman.html ):
+~~~~
+json
+   element
+
+value
+   object
+   array
+   string
+   number
+   "true"
+   "false"
+   "null"
+
+object
+    '{' ws '}'
+    '{' members '}'
+
+members
+    member
+    member ',' members
+
+member
+    ws string ws ':' element
+
+array
+    '[' ws ']'
+    '[' elements ']'
+
+elements
+    element
+    element ',' elements
+
+element
+    ws value ws
+
+string
+'"' characters '"'
+
+characters
+    ""
+    character characters
+
+character
+    '0020' . '10FFFF' - '"' - '\'
+'\' escape
+
+escape
+    '"'
+    '\'
+    '/'
+    'b'
+    'n'
+    'r'
+    't'
+    'u' hex hex hex hex
+
+hex
+    digit
+    'A' . 'F'
+    'a' . 'f'
+
+number
+    int frac exp
+
+int
+    digit
+    onenine digits
+    '-' digit
+    '-' onenine digits
+
+digits
+    digit
+    digit digits
+
+digit
+    '0'
+    onenine
+
+onenine
+    '1' . '9'
+
+frac
+    ""
+    '.' digits
+
+exp
+    ""
+    'E' sign digits
+    'e' sign digits
+
+sign
+    ""
+    '+'
+    '-'
+
+ws
+    ""
+    '0009' ws
+    '000A' ws
+    '000D' ws
+    '0020' ws
+
+~~~~
+### Compressed JSON Grammar:
+
+A complete payload is a suite of messages: compressed JSON starts as "elements" when decompressing the payload received from radio.
+
+~~~~
+compressedJSON
+   element
+
+radioPayload
+   elements (an array of element)
+
+elements
+   element
+   element nextelements
+   
+nextelements
+   nextelement
+   nextelement nextelements
+
+element
+   value
+   
+nextelement
+   nextvalue
+
+value
+   othervalue
+   '-' number
+
+nextvalue
+   othervalue
+   '+-' number
+
+othervalue
+   object
+   array
+   string
+   '+' number
+   '+T' (for "true")
+   '+F' (for "false")
+   '+N' (for "null")
+
+object
+    '{}'
+    '{' members '}'
+
+members
+    member
+    member members
+
+member
+    name element
+
+alpha
+    'a' . 'z'
+    'A' . 'Z'
+    '_'
+
+name
+    alpha
+    alpha alphanum
+
+alphanum
+    alpha
+    alpha alphanum
+    digit
+    digit alphanum
+    
+array
+    '[]'
+    '[' elements ']'
+
+string
+'"' characters '"'
+"'" characters "'"
+
+characters
+    ""
+    character characters
+
+character
+    '0020' . '10FFFF' - '"' - '\'
+'\' escape
+
+escape
+    '"'
+    '\'
+    '/'
+    'b'
+    'n'
+    'r'
+    't'
+    'u' hex hex hex hex
+
+hex
+    digit
+    'A' . 'F'
+    'a' . 'f'
+
+number
+    int
+    int frac
+    int frac exp
+
+int
+    digit
+    onenine digits
+
+digits
+    digit
+    digit digits
+
+digit
+    '0'
+    onenine
+
+onenine
+    '1' . '9'
+
+frac
+    '-'
+    '-' digits
+
+exp
+    '-' digit
+    '--' digits
+~~~~
+To decompress, this grammar must be used to parse the input data...
+
 ## Decoding
 The decoding should first read the input buffer by chunks of 4 bits. It starts in the Upper case Table, row 0.
 The characters to generate are found by addressing the right row in the right table. If the UTF-8 begin character is detected, the following byte (not chunk) is the beginning of an UTF-8 string to be appended as is. This string ends with a byte containing #255 (0xFF) which never appears in a valid UTF-8 (or at the end of the input buffer).
@@ -127,8 +363,8 @@ Our first aim will be to start from a string of encoded bytes and obtain the res
 to:
 `[{TS+316123456B+3-71T+21-3H+67-2L+400C2+1134U+FA+N}{TS+316123516B+3-7T+21-35H+67L+480C2+1156U+TA+567}]`
 
-A second function will be necessary later to transform this result in a JSON-LD compatible format (typically for transmission to a Web application):
-`[{'TS':316123456,'B':3.71,'T':21.3,'H':67.2,'L':400,'C2':1134,'U':false,'A':null}[{'TS':316123516,'B':3.7,'T':21.35,'H':67,'L':480,'C2':1156,'U':true,'A':567}`
+A second function will be necessary later to transform this result in a JSON compatible format (typically for transmission to a Web application):
+`[{'TS':316123456,'B':3.71,'T':21.3,'H':67.2,'L':400,'C2':1134,'U':false,'A':null},{'TS':316123516,'B':3.7,'T':21.35,'H':67,'L':480,'C2':1156,'U':true,'A':567}]`
 
 ## Encoding
 A reverse table will be created from the Decoding tables. As the tables only include regular ASCII characters (no €, °, ², ³ or whatsoever), none are above #126 (0x7E) or lower than #32 (0x20). In this "reverse" table, the ASCII characters will be marked as unsupported or present in table "lower" or "UPPER", at a specific row and a specific 4 bits value (11 or lower).
