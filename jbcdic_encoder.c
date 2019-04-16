@@ -53,7 +53,7 @@
 
 /**
 * Definition of CHAR_MAX : constant int value 127 because the minimal ASCII char accepted is 127.
-* /
+*/
 #define CHAR_MAX 127
 
 
