@@ -1,8 +1,8 @@
 /**
-* \file main.c
+* \file jbcdic_encoder.c
 * \brief This program allows to encode and decode JBCDIC format.
 * \author Maxime Franco
-* \version 0.1
+* \version 1
 * \date 16 avril 2019
 *
 *    This program allows to encode and decode JBCDIC format
@@ -28,19 +28,32 @@
 
 /**
 * Definition of ROW : constant int value 4 because the different alphabets contain 4 ROW.
-* Definition of COLUMN : constant int value 12 because all alphabets contain 12 column
-* Definition of NB_ALPHABET : constant int value 2 because there are 2 type of alphabet.
-* Definition of CHAR_AlPHABET : constant int value 48 because there are 48 chars by alphabet
-* Definition of CHAR_MIN : constant int value 32 because the minimal ASCII char accepted is 32.
-* Definition of CHAR_MAX : constant int value 127 because the minimal ASCII char accepted is 127.
 */
 
-
 #define ROW 4
+/**
+* Definition of COLUMN : constant int value 12 because all alphabets contain 12 column
+*/
 #define COLUMN 12
+
+/**
+* Definition of NB_ALPHABET : constant int value 2 because there are 2 type of alphabet.
+*/
 #define NB_ALPHABET 2
+
+/**
+* Definition of CHAR_AlPHABET : constant int value 48 because there are 48 chars by alphabet
+*/
 #define CHAR_ALPHABET 48
+
+/**
+* Definition of CHAR_MIN : constant int value 32 because the minimal ASCII char accepted is 32.
+*/
 #define CHAR_MIN 32
+
+/**
+* Definition of CHAR_MAX : constant int value 127 because the minimal ASCII char accepted is 127.
+* /
 #define CHAR_MAX 127
 
 
