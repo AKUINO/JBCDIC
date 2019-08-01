@@ -23,7 +23,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include <iostream>
+//#include <iostream>
 #include <cstdlib>
 #include <stdint.h>
 #include <string.h>
@@ -62,6 +62,22 @@
 /**
 * Definition of the alphabet.
 */
+#ifdef UBCDIC
+static const char ALPHABET[NB_ALPHABET][ROW][COLUMN] = {
+    {
+        { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-'},
+        { '\'', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', '&', '='},
+        { '\"', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', '{', '}'},
+        { 0x7F,  ' ', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_', ','}
+    },
+    {
+        { '|', '!', '*', '#', '*', '%', '+', '^', '?', ';', '[', ']'},
+        { '@', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', '(', ')'},
+        { '\\', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', '<', '>'},
+        { '`',  '~', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '/', ':'}
+    }
+};
+#else
 static const char ALPHABET[NB_ALPHABET][ROW][COLUMN] = {
     {
         { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-'},
@@ -76,6 +92,7 @@ static const char ALPHABET[NB_ALPHABET][ROW][COLUMN] = {
         { '`',  '~', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '/', ':'}
     }
 };
+#endif
 
 /**
  * \struct jbcdic_char

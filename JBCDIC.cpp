@@ -1,3 +1,5 @@
+// We are not encoding JSON but URL ...
+#define UBCDIC
 #include "JBCDIC.h"
 
 
